@@ -321,18 +321,62 @@ body {
 
 .color-option {
   height: 72px;
-  border: 3px solid transparent;
+  border: 3px solid rgba(255, 255, 255, 0.35);
   border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.15s, border-color 0.15s;
+  position: relative;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
 }
 
 .color-option:hover:not(:disabled) { transform: scale(1.05); }
 
 .color-option:disabled { cursor: default; }
 
-.color-option.correct { border-color: var(--success); }
-.color-option.wrong { border-color: var(--error); }
+.color-option.correct {
+  border-color: #fff;
+  box-shadow: 0 0 0 3px var(--success);
+}
+
+.color-option.correct::after {
+  content: '✓';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--success);
+  color: #0f1419;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.color-option.wrong {
+  border-color: #fff;
+  box-shadow: 0 0 0 3px var(--error);
+}
+
+.color-option.wrong::after {
+  content: '✕';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--error);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
 
 .quiz-feedback {
   padding: 0.75rem 1rem;
