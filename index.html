@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>配色练习 — Color Practice</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <h1>配色练习</h1>
+      <p class="subtitle">配合《配色原理与色彩搭配》的实战工具</p>
+    </div>
+    <nav class="nav" role="tablist">
+      <button class="nav-btn active" data-tab="harmony" role="tab">配色生成</button>
+      <button class="nav-btn" data-tab="quiz" role="tab">互动练习</button>
+      <button class="nav-btn" data-tab="contrast" role="tab">对比度检测</button>
+      <button class="nav-btn" data-tab="progress" role="tab">学习进度</button>
+    </nav>
+  </header>
+
+  <main class="main">
+    <!-- 配色生成 -->
+    <section id="tab-harmony" class="tab-panel active">
+      <div class="panel-grid">
+        <div class="card">
+          <h2>主色选择</h2>
+          <div class="color-picker-row">
+            <input type="color" id="base-color" value="#3b82f6" aria-label="选择主色">
+            <div class="color-info">
+              <span id="base-hex">#3B82F6</span>
+              <span id="base-hsl">HSL(217, 91%, 60%)</span>
+            </div>
+          </div>
+          <canvas id="color-wheel" width="280" height="280" aria-label="色轮，点击选择色相"></canvas>
+          <div class="slider-group">
+            <label>饱和度 <output id="sat-out">91</output>%</label>
+            <input type="range" id="sat-slider" min="0" max="100" value="91">
+          </div>
+          <div class="slider-group">
+            <label>明度 <output id="light-out">60</output>%</label>
+            <input type="range" id="light-slider" min="0" max="100" value="60">
+          </div>
+        </div>
+
+        <div class="card card-wide">
+          <h2>配色方案</h2>
+          <div class="scheme-tabs">
+            <button class="scheme-btn" data-scheme="monochromatic">同类色</button>
+            <button class="scheme-btn" data-scheme="analogous">相似色</button>
+            <button class="scheme-btn" data-scheme="triadic">对比色</button>
+            <button class="scheme-btn active" data-scheme="complementary">互补色</button>
+            <button class="scheme-btn" data-scheme="split-complementary">分裂补色</button>
+            <button class="scheme-btn" data-scheme="tetradic">四方色</button>
+          </div>
+          <p id="scheme-desc" class="scheme-desc"></p>
+          <div id="palette" class="palette"></div>
+          <div id="palette-codes" class="palette-codes"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 互动练习 -->
+    <section id="tab-quiz" class="tab-panel">
+      <div class="card quiz-card">
+        <div class="quiz-header">
+          <h2 id="quiz-title">识别配色类型</h2>
+          <div class="quiz-meta">
+            <span>得分：<strong id="quiz-score">0</strong></span>
+            <span>连续正确：<strong id="quiz-streak">0</strong></span>
+          </div>
+        </div>
+        <div class="quiz-type-tabs">
+          <button class="quiz-type-btn active" data-quiz="identify">识别类型</button>
+          <button class="quiz-type-btn" data-quiz="pick">选出和谐色</button>
+          <button class="quiz-type-btn" data-quiz="contrast-guess">对比度判断</button>
+        </div>
+        <div id="quiz-content" class="quiz-content"></div>
+        <div id="quiz-feedback" class="quiz-feedback hidden"></div>
+        <button id="quiz-next" class="btn btn-primary hidden">下一题</button>
+      </div>
+    </section>
+
+    <!-- 对比度检测 -->
+    <section id="tab-contrast" class="tab-panel">
+      <div class="panel-grid">
+        <div class="card">
+          <h2>前景 / 背景色</h2>
+          <div class="contrast-pickers">
+            <label>
+              前景（文字）
+              <input type="color" id="fg-color" value="#ffffff">
+              <span id="fg-hex">#FFFFFF</span>
+            </label>
+            <label>
+              背景
+              <input type="color" id="bg-color" value="#1e293b">
+              <span id="bg-hex">#1E293B</span>
+            </label>
+          </div>
+        </div>
+        <div class="card card-wide">
+          <h2>检测结果</h2>
+          <div id="contrast-preview" class="contrast-preview">
+            <p class="preview-text">配色练习示例文字 Aa</p>
+          </div>
+          <div id="contrast-results" class="contrast-results"></div>
+          <p class="hint">WCAG 2.1 标准：正文建议 ≥ 4.5:1，大标题建议 ≥ 3:1</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 学习进度 -->
+    <section id="tab-progress" class="tab-panel">
+      <div class="card">
+        <h2>学习进度</h2>
+        <p class="hint">数据保存在浏览器本地（localStorage），以后可切换为云端数据库。</p>
+        <div id="progress-stats" class="progress-stats"></div>
+        <div id="progress-history" class="progress-history"></div>
+        <button id="clear-progress" class="btn btn-danger">清空本地进度</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>配色练习 v1.0</span>
+    <span id="storage-mode">存储：localStorage</span>
+  </footer>
+
+  <script src="js/color-utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/harmony.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
