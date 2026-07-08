@@ -84,7 +84,8 @@ body {
 
 @media (min-width: 720px) {
   .panel-grid {
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: minmax(280px, 320px) 1fr;
+    align-items: start;
   }
 }
 
@@ -108,11 +109,16 @@ body {
   font-weight: 600;
 }
 
+.card-picker {
+  min-width: 0;
+}
+
 .color-picker-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
 .color-picker-row input[type="color"] {
@@ -136,11 +142,30 @@ body {
 #base-hex { font-weight: 600; }
 #base-hsl { color: var(--text-muted); font-size: 0.8125rem; }
 
+.wheel-wrap {
+  width: min(100%, 300px);
+  margin: 0 auto 1rem;
+  aspect-ratio: 1;
+}
+
+@media (min-width: 720px) {
+  .wheel-wrap {
+    width: 100%;
+    max-width: none;
+  }
+}
+
 #color-wheel {
   display: block;
-  margin: 0 auto 1rem;
-  cursor: crosshair;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
   border-radius: 50%;
+}
+
+#color-wheel.dragging {
+  cursor: grabbing;
 }
 
 .slider-group {

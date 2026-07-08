@@ -24,7 +24,7 @@
     <!-- 配色生成 -->
     <section id="tab-harmony" class="tab-panel active">
       <div class="panel-grid">
-        <div class="card">
+        <div class="card card-picker">
           <h2>主色选择</h2>
           <div class="color-picker-row">
             <input type="color" id="base-color" value="#3b82f6" aria-label="选择主色">
@@ -33,7 +33,9 @@
               <span id="base-hsl">HSL(217, 91%, 60%)</span>
             </div>
           </div>
-          <canvas id="color-wheel" width="280" height="280" aria-label="色轮，点击选择色相"></canvas>
+          <div class="wheel-wrap">
+            <canvas id="color-wheel" aria-label="色轮，点击或拖动选择色相"></canvas>
+          </div>
           <div class="slider-group">
             <label>饱和度 <output id="sat-out">91</output>%</label>
             <input type="range" id="sat-slider" min="0" max="100" value="91">
