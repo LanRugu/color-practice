@@ -3,8 +3,8 @@
  * 切换方式：在 app.js 中将 createStorage(false) 改为 createStorage(true)。
  */
 (function (global) {
-  const STORAGE_KEY = 'color-practice-data';
-  const API_BASE = '/api';
+  var STORAGE_KEY = 'color-practice-data';
+  var API_BASE = '/api';
 
   function defaultData() {
     return {
@@ -17,6 +17,7 @@
         lastBaseColor: '#3b82f6',
         lastScheme: 'complementary',
       },
+      favorites: [],
     };
   }
 
@@ -26,12 +27,13 @@
 
   LocalStorageAdapter.prototype.load = function () {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      var raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return defaultData();
-      const parsed = JSON.parse(raw);
-      const base = defaultData();
+      var parsed = JSON.parse(raw);
+      var base = defaultData();
       return Object.assign(base, parsed, {
         preferences: Object.assign({}, base.preferences, parsed.preferences || {}),
+        favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
       });
     } catch (e) {
       return defaultData();
@@ -142,10 +144,40 @@
     });
   };
 
-  ProgressStore.prototype.clearAll = function () {
+  ProgressStore.prototype.addFavorite = function (item) {
     var self = this;
-    return this.adapter.clear().then(function () {
-      self.data = defaultData();
+    return this.init().then(function () {
+      if (!self.data.favorites) self.data.favorites = [];
+      var entry = Object.assign({}, item, {
+        id: item.id || ('fav-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7)),
+        savedAt: item.savedAt || new Date().toISOString(),
+      });
+      self.data.favorites.unshift(entry);
+      if (self.data.favorites.length > 50) {
+        self.data.favorites = self.data.favorites.slice(0, 50);
+      }
+      return self.persist().then(function () { return entry; });
+    });
+  };
+
+  ProgressStore.prototype.removeFavorite = function (id) {
+    var self = this;
+    return this.init().then(function () {
+      if (!self.data.favorites) self.data.favorites = [];
+      self.data.favorites = self.data.favorites.filter(function (f) { return f.id !== id; });
+      return self.persist();
+    });
+  };
+
+  ProgressStore.prototype.clearQuizProgress = function () {
+    var self = this;
+    return this.init().then(function () {
+      self.data.score = 0;
+      self.data.streak = 0;
+      self.data.totalAnswered = 0;
+      self.data.totalCorrect = 0;
+      self.data.history = [];
+      return self.persist();
     });
   };
 

@@ -4,8 +4,34 @@
   var hslToHex = utils.hslToHex;
   var generateScheme = utils.generateScheme;
   var SCHEME_INFO = utils.SCHEME_INFO;
+  var SCHEME_ORDER = utils.SCHEME_ORDER;
+  var getSchemeName = utils.getSchemeName;
 
   var currentScheme = 'complementary';
+
+  function renderSchemeTabs(container, activeScheme, onSelect) {
+    container.innerHTML = SCHEME_ORDER.map(function (key) {
+      var active = key === activeScheme ? ' active' : '';
+      return '<button type="button" class="scheme-btn' + active + '" data-scheme="' + key + '">' +
+        getSchemeName(key) + '</button>';
+    }).join('');
+
+    container.querySelectorAll('.scheme-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        container.querySelectorAll('.scheme-btn').forEach(function (b) {
+          b.classList.remove('active');
+        });
+        btn.classList.add('active');
+        onSelect(btn.dataset.scheme);
+      });
+    });
+  }
+
+  function setActiveSchemeTab(container, schemeKey) {
+    container.querySelectorAll('.scheme-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.scheme === schemeKey);
+    });
+  }
 
   function initHarmony(store) {
     var baseInput = document.getElementById('base-color');
@@ -19,16 +45,20 @@
     var schemeDesc = document.getElementById('scheme-desc');
     var palette = document.getElementById('palette');
     var paletteCodes = document.getElementById('palette-codes');
+    var schemeTabs = document.getElementById('scheme-tabs');
 
     if (store.data && store.data.preferences && store.data.preferences.lastBaseColor) {
       baseInput.value = store.data.preferences.lastBaseColor;
     }
     if (store.data && store.data.preferences && store.data.preferences.lastScheme) {
       currentScheme = store.data.preferences.lastScheme;
-      document.querySelectorAll('.scheme-btn').forEach(function (btn) {
-        btn.classList.toggle('active', btn.dataset.scheme === currentScheme);
-      });
     }
+
+    renderSchemeTabs(schemeTabs, currentScheme, function (schemeKey) {
+      currentScheme = schemeKey;
+      renderPalette();
+      debouncedSavePrefs({ lastScheme: currentScheme, lastBaseColor: getBaseHex() });
+    });
 
     var wheelBase = null;
     var lastDrawnHue = null;
@@ -60,6 +90,7 @@
     }
 
     function syncFromHex(hex) {
+      baseInput.value = hex;
       var hsl = hexToHsl(hex);
       var h = hsl.h, s = hsl.s, l = hsl.l;
       satSlider.value = Math.round(s);
@@ -256,21 +287,37 @@
       setBaseFromHsl(hsl.h, hsl.s, parseInt(lightSlider.value, 10));
     });
 
-    document.querySelectorAll('.scheme-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        document.querySelectorAll('.scheme-btn').forEach(function (b) { b.classList.remove('active'); });
-        btn.classList.add('active');
-        currentScheme = btn.dataset.scheme;
-        renderPalette();
-        debouncedSavePrefs({ lastScheme: currentScheme, lastBaseColor: getBaseHex() });
-      });
-    });
-
     syncFromHex(getBaseHex());
 
     return {
       getBaseHex: getBaseHex,
-      setScheme: function (key) { currentScheme = key; renderPalette(); },
+      getCurrentScheme: function () { return currentScheme; },
+      getCurrentPalette: function () {
+        var hex = getBaseHex();
+        return {
+          baseColor: hex,
+          scheme: currentScheme,
+          colors: generateScheme(hex, currentScheme),
+        };
+      },
+      applyPalette: function (palette) {
+        if (palette.scheme) {
+          currentScheme = palette.scheme;
+          setActiveSchemeTab(schemeTabs, currentScheme);
+        }
+        if (palette.baseColor) {
+          lastDrawnHue = null;
+          syncFromHex(palette.baseColor);
+        } else {
+          renderPalette();
+        }
+        store.updatePreferences({ lastBaseColor: getBaseHex(), lastScheme: currentScheme });
+      },
+      setScheme: function (key) {
+        currentScheme = key;
+        setActiveSchemeTab(schemeTabs, key);
+        renderPalette();
+      },
     };
   }
 

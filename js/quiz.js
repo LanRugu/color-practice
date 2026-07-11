@@ -1,18 +1,41 @@
 (function (global) {
   var utils = global.ColorPractice.utils;
+  var config = global.ColorPractice.config;
   var generateScheme = utils.generateScheme;
-  var SCHEME_INFO = utils.SCHEME_INFO;
+  var SCHEME_ORDER = utils.SCHEME_ORDER;
+  var getSchemeName = utils.getSchemeName;
   var randomHex = utils.randomHex;
   var randomSchemeType = utils.randomSchemeType;
   var shuffle = utils.shuffle;
   var contrastRatio = utils.contrastRatio;
   var hexToHsl = utils.hexToHsl;
   var hslToHex = utils.hslToHex;
+  var QUIZ_TYPES = config.QUIZ_TYPES;
+  var getQuizTypeTitle = config.getQuizTypeTitle;
+  var getQuizTypeIntro = config.getQuizTypeIntro;
 
-  var SCHEME_NAMES = {};
-  Object.keys(SCHEME_INFO).forEach(function (k) {
-    SCHEME_NAMES[k] = SCHEME_INFO[k].name;
-  });
+  function schemeColorPair(base, schemeKey) {
+    var colors = generateScheme(base, schemeKey);
+    return [colors[0], colors[1]];
+  }
+
+  function renderQuizTypeTabs(container, activeType, onSelect) {
+    container.innerHTML = QUIZ_TYPES.map(function (item) {
+      var active = item.id === activeType ? ' active' : '';
+      return '<button type="button" class="quiz-type-btn' + active + '" data-quiz="' + item.id + '">' +
+        item.label + '</button>';
+    }).join('');
+
+    container.querySelectorAll('.quiz-type-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        container.querySelectorAll('.quiz-type-btn').forEach(function (b) {
+          b.classList.remove('active');
+        });
+        btn.classList.add('active');
+        onSelect(btn.dataset.quiz);
+      });
+    });
+  }
 
   function initQuiz(store) {
     var content = document.getElementById('quiz-content');
@@ -21,16 +44,11 @@
     var scoreEl = document.getElementById('quiz-score');
     var streakEl = document.getElementById('quiz-streak');
     var titleEl = document.getElementById('quiz-title');
+    var quizTypeTabs = document.getElementById('quiz-type-tabs');
 
-    var quizType = 'identify';
+    var quizType = QUIZ_TYPES[0].id;
     var currentQuestion = null;
     var answered = false;
-
-    var titles = {
-      identify: '识别配色类型',
-      pick: '选出和谐色',
-      'contrast-guess': '对比度判断',
-    };
 
     function updateStats() {
       scoreEl.textContent = (store.data && store.data.score) || 0;
@@ -47,8 +65,10 @@
     function buildIdentifyQuestion() {
       var schemeKey = randomSchemeType();
       var base = randomHex();
-      var colors = generateScheme(base, schemeKey);
-      var wrongKeys = shuffle(Object.keys(SCHEME_INFO).filter(function (k) { return k !== schemeKey; })).slice(0, 3);
+      var colors = schemeColorPair(base, schemeKey);
+      var wrongKeys = shuffle(SCHEME_ORDER.filter(function (k) {
+        return k !== schemeKey;
+      })).slice(0, 3);
       var options = shuffle([schemeKey].concat(wrongKeys));
       return { type: 'identify', data: { colors: colors, schemeKey: schemeKey, options: options } };
     }
@@ -72,7 +92,10 @@
 
     function buildContrastQuestion() {
       var wantPass = Math.random() < 0.5;
-      var fg, bg, ratio, passAA;
+      var fg;
+      var bg;
+      var ratio;
+      var passAA;
       var attempts = 0;
 
       do {
@@ -112,7 +135,7 @@
       answered = false;
       feedback.classList.add('hidden');
       nextBtn.classList.add('hidden');
-      titleEl.textContent = titles[quizType];
+      titleEl.textContent = getQuizTypeTitle(quizType);
 
       if (quizType === 'identify') {
         currentQuestion = buildIdentifyQuestion();
@@ -124,7 +147,8 @@
             return '<div class="swatch" style="background:' + c + '"></div>';
           }).join('') + '</div>' +
           '<div class="quiz-options">' + options.map(function (key) {
-            return '<button class="quiz-option" data-answer="' + key + '">' + SCHEME_NAMES[key] + '</button>';
+            return '<button type="button" class="quiz-option" data-answer="' + key + '">' +
+              getSchemeName(key) + '</button>';
           }).join('') + '</div>';
       } else if (quizType === 'pick') {
         currentQuestion = buildPickQuestion();
@@ -132,10 +156,12 @@
         var schemeKey = currentQuestion.data.schemeKey;
         var pickOptions = currentQuestion.data.options;
         content.innerHTML =
-          '<p>主色如下，哪种是 <strong>' + SCHEME_NAMES[schemeKey] + '</strong> 中的和谐色？</p>' +
+          '<p class="quiz-intro hint">' + getQuizTypeIntro('pick') + '</p>' +
+          '<p>主色如下，哪种是 <strong>' + getSchemeName(schemeKey) + '</strong> 中的和谐色？</p>' +
           '<div class="quiz-palette"><div class="swatch" style="background:' + base + '"></div></div>' +
           '<div class="color-options">' + pickOptions.map(function (c) {
-            return '<button class="color-option" style="background:' + c + '" data-answer="' + c + '" aria-label="' + c + '"></button>';
+            return '<button type="button" class="color-option" style="background:' + c + '" data-answer="' + c +
+              '" aria-label="' + c + '"></button>';
           }).join('') + '</div>';
       } else {
         currentQuestion = buildContrastQuestion();
@@ -147,7 +173,8 @@
           '<div class="contrast-preview" style="background:' + bg + '; color:' + fg + '">' +
           '<p class="preview-text">可读性测试 Aa</p></div>' +
           '<div class="quiz-options">' + contrastOptions.map(function (opt) {
-            return '<button class="quiz-option" data-answer="' + opt.value + '">' + opt.label + '</button>';
+            return '<button type="button" class="quiz-option" data-answer="' + opt.value + '">' +
+              opt.label + '</button>';
           }).join('') + '</div>';
       }
 
@@ -169,11 +196,12 @@
 
       var correct = false;
       var detail = '';
+      var answer;
 
       if (quizType === 'identify') {
-        var answer = btn.dataset.answer;
+        answer = btn.dataset.answer;
         correct = answer === currentQuestion.data.schemeKey;
-        detail = SCHEME_NAMES[currentQuestion.data.schemeKey];
+        detail = getSchemeName(currentQuestion.data.schemeKey);
         buttons.forEach(function (b) {
           if (b.dataset.answer === currentQuestion.data.schemeKey) b.classList.add('correct');
           else if (b === btn && !correct) b.classList.add('wrong');
@@ -206,13 +234,9 @@
       store.recordAnswer({ quizType: quizType, correct: correct, detail: detail }).then(updateStats);
     }
 
-    document.querySelectorAll('.quiz-type-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        document.querySelectorAll('.quiz-type-btn').forEach(function (b) { b.classList.remove('active'); });
-        btn.classList.add('active');
-        quizType = btn.dataset.quiz;
-        renderQuestion();
-      });
+    renderQuizTypeTabs(quizTypeTabs, quizType, function (type) {
+      quizType = type;
+      renderQuestion();
     });
 
     nextBtn.addEventListener('click', renderQuestion);
