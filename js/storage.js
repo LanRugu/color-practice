@@ -103,6 +103,11 @@
     get: function () { return this.adapter.mode; },
   });
 
+  ProgressStore.prototype.ensureLoaded = function () {
+    if (this.data) return Promise.resolve(this.data);
+    return this.init();
+  };
+
   ProgressStore.prototype.persist = function () {
     if (this.data) return this.adapter.save(this.data);
     return Promise.resolve();
@@ -114,7 +119,7 @@
     var correct = payload.correct;
     var detail = payload.detail;
 
-    return this.init().then(function () {
+    return this.ensureLoaded().then(function () {
       self.data.totalAnswered += 1;
       if (correct) {
         self.data.totalCorrect += 1;
@@ -138,7 +143,7 @@
 
   ProgressStore.prototype.updatePreferences = function (prefs) {
     var self = this;
-    return this.init().then(function () {
+    return this.ensureLoaded().then(function () {
       self.data.preferences = Object.assign({}, self.data.preferences, prefs);
       return self.persist();
     });
@@ -146,7 +151,7 @@
 
   ProgressStore.prototype.addFavorite = function (item) {
     var self = this;
-    return this.init().then(function () {
+    return this.ensureLoaded().then(function () {
       if (!self.data.favorites) self.data.favorites = [];
       var entry = Object.assign({}, item, {
         id: item.id || ('fav-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7)),
@@ -162,7 +167,7 @@
 
   ProgressStore.prototype.removeFavorite = function (id) {
     var self = this;
-    return this.init().then(function () {
+    return this.ensureLoaded().then(function () {
       if (!self.data.favorites) self.data.favorites = [];
       self.data.favorites = self.data.favorites.filter(function (f) { return f.id !== id; });
       return self.persist();
@@ -171,7 +176,7 @@
 
   ProgressStore.prototype.clearQuizProgress = function () {
     var self = this;
-    return this.init().then(function () {
+    return this.ensureLoaded().then(function () {
       self.data.score = 0;
       self.data.streak = 0;
       self.data.totalAnswered = 0;

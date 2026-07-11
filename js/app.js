@@ -32,7 +32,10 @@
     var fgHex = document.getElementById('fg-hex');
     var bgHex = document.getElementById('bg-hex');
     var preview = document.getElementById('contrast-preview');
+    var previewHeading = preview.querySelector('.preview-heading');
+    var previewBody = preview.querySelector('.preview-body');
     var results = document.getElementById('contrast-results');
+    var swapBtn = document.getElementById('contrast-swap');
 
     function update() {
       var fg = fgInput.value;
@@ -44,10 +47,15 @@
 
       var ratio = contrastRatio(fg, bg);
       var checks = [
-        { label: 'WCAG AA 正文（≥ 4.5:1）', threshold: 4.5 },
-        { label: 'WCAG AA 大文字（≥ 3:1）', threshold: 3 },
-        { label: 'WCAG AAA 正文（≥ 7:1）', threshold: 7 },
+        { label: 'WCAG AA 正文（≥ 4.5:1）', threshold: 4.5, target: 'body' },
+        { label: 'WCAG AA 大文字（≥ 3:1）', threshold: 3, target: 'heading' },
+        { label: 'WCAG AAA 正文（≥ 7:1）', threshold: 7, target: 'body' },
       ];
+
+      previewHeading.classList.toggle('pass-level', ratio >= 3);
+      previewHeading.classList.toggle('fail-level', ratio < 3);
+      previewBody.classList.toggle('pass-level', ratio >= 4.5);
+      previewBody.classList.toggle('fail-level', ratio < 4.5);
 
       results.innerHTML =
         '<div class="contrast-row"><span>对比度比值</span><strong>' + ratio.toFixed(2) + ' : 1</strong></div>' +
@@ -57,6 +65,13 @@
             (ratio >= c.threshold ? '通过' : '未通过') + '</span></div>';
         }).join('');
     }
+
+    swapBtn.addEventListener('click', function () {
+      var temp = fgInput.value;
+      fgInput.value = bgInput.value;
+      bgInput.value = temp;
+      update();
+    });
 
     fgInput.addEventListener('input', update);
     bgInput.addEventListener('input', update);

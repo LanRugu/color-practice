@@ -85,7 +85,10 @@
         <div class="quiz-type-tabs" id="quiz-type-tabs"></div>
         <div id="quiz-content" class="quiz-content"></div>
         <div id="quiz-feedback" class="quiz-feedback hidden"></div>
-        <button id="quiz-next" class="btn btn-primary hidden">下一题</button>
+        <div class="quiz-actions">
+          <button type="button" id="quiz-skip" class="btn btn-secondary">跳过</button>
+          <button type="button" id="quiz-next" class="btn btn-primary hidden">下一题</button>
+        </div>
       </div>
     </section>
 
@@ -106,11 +109,13 @@
               <span id="bg-hex">#1E293B</span>
             </label>
           </div>
+          <button type="button" id="contrast-swap" class="btn btn-secondary contrast-swap-btn">互换前景 / 背景</button>
         </div>
         <div class="card card-wide">
           <h2>检测结果</h2>
           <div id="contrast-preview" class="contrast-preview">
-            <p class="preview-text">配色练习示例文字 Aa</p>
+            <p class="preview-heading">大标题预览 Aa</p>
+            <p class="preview-body">正文预览：配色练习示例文字</p>
           </div>
           <div id="contrast-results" class="contrast-results"></div>
           <p class="hint">WCAG 2.1 标准：正文建议 ≥ 4.5:1，大标题建议 ≥ 3:1</p>

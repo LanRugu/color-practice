@@ -41,6 +41,7 @@
     var content = document.getElementById('quiz-content');
     var feedback = document.getElementById('quiz-feedback');
     var nextBtn = document.getElementById('quiz-next');
+    var skipBtn = document.getElementById('quiz-skip');
     var scoreEl = document.getElementById('quiz-score');
     var streakEl = document.getElementById('quiz-streak');
     var titleEl = document.getElementById('quiz-title');
@@ -59,7 +60,13 @@
       feedback.classList.remove('hidden', 'success', 'error');
       feedback.classList.add(correct ? 'success' : 'error');
       feedback.textContent = message;
+      skipBtn.classList.add('hidden');
       nextBtn.classList.remove('hidden');
+    }
+
+    function handleSkip() {
+      if (answered) return;
+      renderQuestion();
     }
 
     function buildIdentifyQuestion() {
@@ -135,6 +142,7 @@
       answered = false;
       feedback.classList.add('hidden');
       nextBtn.classList.add('hidden');
+      skipBtn.classList.remove('hidden');
       titleEl.textContent = getQuizTypeTitle(quizType);
 
       if (quizType === 'identify') {
@@ -190,6 +198,7 @@
     function handleAnswer(btn) {
       if (answered) return;
       answered = true;
+      skipBtn.classList.add('hidden');
 
       var buttons = content.querySelectorAll('[data-answer]');
       buttons.forEach(function (b) { b.disabled = true; });
@@ -240,6 +249,7 @@
     });
 
     nextBtn.addEventListener('click', renderQuestion);
+    skipBtn.addEventListener('click', handleSkip);
     updateStats();
     renderQuestion();
 
