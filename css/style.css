@@ -500,6 +500,11 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 }
 
+.gallery-grid > .hint {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
 .gallery-card {
   background: var(--surface-2);
   border: 1px solid var(--border);
